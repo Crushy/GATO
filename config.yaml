@@ -1,0 +1,8 @@
+
+-   !!python/object:__main__.Task
+    name : "Say hi"
+    command : "print(Hello world)"
+
+-   !!python/object:__main__.Task
+    name : "Say bye"
+    command : "print(Goodbye world)"
