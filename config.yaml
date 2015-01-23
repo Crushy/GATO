@@ -1,8 +1,20 @@
 
 -   !!python/object:__main__.Task
     name : "Say hi"
-    command : "print(Hello world)"
+    command : "print(\"Hello world\")"
 
 -   !!python/object:__main__.Task
     name : "Say bye"
-    command : "print(Goodbye world)"
+    command : "print(\"Goodbye world\")"
+
+-   !!python/object:__main__.Task
+    name : "Official Website"
+    command : "import webbrowser\nwebbrowser.open(\"www.titanforgedgames.com\")"
+
+-   !!python/object:__main__.Task
+    name : "Wiki"
+    command : "import webbrowser\nwebdbrowser.open(\"wiki.titanforgedgames.com\")"
+
+-   !!python/object:__main__.Task
+    name : "A broken command"
+    command : "import asdfaafawebbrowser\nwebdbrowser.opedan(\"wiki.titanforgedgames.com\")"

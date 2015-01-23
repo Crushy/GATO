@@ -1,7 +1,8 @@
-import sys
+import sys, traceback
 
 from PySide.QtCore import *
-from PySide.QtGui import QSystemTrayIcon, QMenu, QAction, qApp, QApplication, QWidget, QIcon, QStyle, QMessageBox
+from PySide.QtGui import QSystemTrayIcon, QMenu, QAction, qApp, QApplication, QWidget, QIcon, QStyle, QMessageBox, \
+    QPushButton
 
 import yaml
 
@@ -11,37 +12,70 @@ class SystemTrayIcon(QSystemTrayIcon):
     GATO - Gamedev Auxiliary TOol
     Mostly sits on your taskbar, wasting a few resources and looking pretty. Occasionally it may turn out to be useful (like it's namesake)
     """
-
     def __init__(self, icon, tasks, parent=None):
         QSystemTrayIcon.__init__(self, icon, parent)
         menu = QMenu(parent)
         menu.setContextMenuPolicy(Qt.ActionsContextMenu)
 
-        for task in tasks:
-            task1_action = QAction(task.name, self)
-            task1_action.triggered.connect(self.execute_task)
+        all_actions = []
 
-        #Quit
-        icon_quit = QIcon("process-stop.xpm")
-        action_quit = QAction(icon_quit, "Quit", self)
-        action_quit.triggered.connect(qApp.quit)
+        for task in tasks:
+            task_action = QAction(task.name, self)
+
+            task_action.triggered.connect(lambda: self.execute_task(task.command))
+            all_actions.append(task_action)
 
         icon_about = QIcon("help-browser.xpm")
         action_about = QAction(icon_about, "About", self)
         action_about.triggered.connect(self.about)
+        all_actions.append(action_about)
 
-        menu.addActions([task1_action, action_about, action_quit])
+        # Quit
+        icon_quit = QIcon("process-stop.xpm")
+        action_quit = QAction(icon_quit, "Quit", self)
+        action_quit.triggered.connect(qApp.quit)
+        all_actions.append(action_quit)
 
-        print("tet")
+        menu.addActions(all_actions)
+
         self.setContextMenu(menu)
 
-    def execute_task(self):
-        print("Testing a task")
+    def execute_task(self, command):
+
+        # TODO: handle some partticularities about using th exec command and exceptions
+        try:
+            exec(command)
+        except:
+            (exc_type, exc_value, exc_traceback) = sys.exc_info()
+
+            msg_box = QMessageBox()
+
+            msg_box.setText("Could not execute command: " + command)
+
+            # msg_box.setWindowIcon())
+            msg_box.setIcon(QMessageBox.Critical)
+            msg_box.setDetailedText(traceback.format_exc())
+
+            button = QPushButton("Well, fuck me then")
+            button.clicked.connect(msg_box.close)
+
+            msg_box.addButton(button, QMessageBox.AcceptRole)
+            msg_box.exec_()
+
+
 
     def about(self):
         msg_box = QMessageBox()
-        msg_box.setText("Made by Pedro Caetano")
-        #TODO: this quits
+        msg_box.setWindowTitle("About GATO")
+        msg_box.setIcon(QMessageBox.Information)
+
+        msg_box.setText("GATO was made by Pedro Caetano")
+
+        button = QPushButton("Indeed")
+        button.clicked.connect(msg_box.close)
+
+        msg_box.addButton(button, QMessageBox.AcceptRole)
+
         msg_box.exec_()
 
 
@@ -74,13 +108,19 @@ def main():
     # print( yaml.dump(config_file) )
 
     # sys.exit(0)
-    app = QApplication(sys.argv)
+    import sys
+
+    sys.argv[0] = 'whatevernameyouwant'
+    app = QApplication("GATO")
 
     #app.setAttribute(Qt.AA_DontShowIconsInMenus, False)
-
+    logo_icon = QIcon("logo.xpm")
+    
     w = QWidget()
-    print(tasks)
-    tray_icon = SystemTrayIcon(QIcon("logo.xpm"), tasks, w)
+    # Important because otherwise closing any window would kill the tray icon
+    app.setQuitOnLastWindowClosed(False)
+    app.setWindowIcon(logo_icon)
+    tray_icon = SystemTrayIcon(logo_icon, tasks, w)
 
     tray_icon.show()
 
