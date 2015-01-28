@@ -12,17 +12,26 @@ class SystemTrayIcon(QSystemTrayIcon):
     GATO - Gamedev Auxiliary TOol
     Mostly sits on your taskbar, wasting a few resources and looking pretty. Occasionally it may turn out to be useful (like it's namesake)
     """
-    def __init__(self, icon, tasks, parent=None):
+
+    def __init__(self, icon, task_list, parent=None):
         QSystemTrayIcon.__init__(self, icon, parent)
         menu = QMenu(parent)
         menu.setContextMenuPolicy(Qt.ActionsContextMenu)
 
         all_actions = []
 
-        for task in tasks:
-            task_action = QAction(task.name, self)
+        def gen_task(j):
+            def func():
+                self.execute_task(j)
 
-            task_action.triggered.connect(lambda: self.execute_task(task.command))
+            return func
+
+        for single_task in task_list:
+            task_action = QAction(single_task.name, self)
+
+            command = gen_task(single_task.command)
+
+            task_action.triggered.connect(command)
             all_actions.append(task_action)
 
         icon_about = QIcon("help-browser.xpm")
@@ -42,11 +51,11 @@ class SystemTrayIcon(QSystemTrayIcon):
 
     def execute_task(self, command):
 
-        # TODO: handle some partticularities about using th exec command and exceptions
+        # TODO: handle some particularities about using the exec command and exceptions
         try:
+            print(command)
             exec(command)
         except:
-            (exc_type, exc_value, exc_traceback) = sys.exc_info()
 
             msg_box = QMessageBox()
 
