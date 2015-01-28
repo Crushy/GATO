@@ -13,7 +13,7 @@
 
 -   !!python/object:__main__.Task
     name : "Wiki"
-    command : "import webbrowser\nwebdbrowser.open(\"wiki.titanforgedgames.com\")"
+    command : "import webbrowser\nwebbrowser.open(\"wiki.titanforgedgames.com\")"
 
 -   !!python/object:__main__.Task
     name : "A broken command"
