@@ -20,16 +20,12 @@ class SystemTrayIcon(QSystemTrayIcon):
 
         all_actions = []
 
-        def gen_task(j):
-            def func():
-                self.execute_task(j)
-
-            return func
-
         for single_task in task_list:
             task_action = QAction(single_task.name, self)
-
-            command = gen_task(single_task.command)
+            
+            # "Localizes" single_task.command so we're not just using a reference to the last one we added
+            #see http://stackoverflow.com/questions/233673/lexical-closures-in-python
+            command = lambda z=single_task.command: self.execute_task(z)
 
             task_action.triggered.connect(command)
             all_actions.append(task_action)
