@@ -1,12 +1,29 @@
-import sys, traceback
+import sys, traceback,subprocess
 
-from PySide.QtCore import *
-from PySide.QtGui import QSystemTrayIcon, QMenu, QAction, qApp, QApplication, QWidget, QIcon, QStyle, QMessageBox, \
-    QPushButton
+try :
+	from PySide.QtCore import *
+	from PySide.QtGui import QSystemTrayIcon, QMenu, QAction, qApp, QApplication, QWidget, QIcon, QStyle, QMessageBox, \
+		QPushButton
+except ImportError :
+	handleMissingModule("PySide","PySide")
+	
 
-import yaml
-
-
+try :
+	import yaml
+except ImportError :
+	handleMissingModule("yaml","pyyaml")
+	
+# TODO : Look into setuptools
+def Handle_Missing_Module(formalName,pipModuleName) :
+	print(formalName+" not found, trying to install")
+	return_code = subprocess.call("pip install -U "+pipModuleName, shell=True)
+	
+	if return_code :
+		print("Sucessfully")
+	else :
+		print("Failed")
+	
+	
 class SystemTrayIcon(QSystemTrayIcon):
     """
     GATO - Gamedev Auxiliary TOol
