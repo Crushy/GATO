@@ -9,3 +9,8 @@ GATO - Gamedev Auxiliary TOol
   * Open your entire work toolset 
   * Setup a newly-formated PC for work
   * etc
+
+Dev Notes
+========
+
+This is meant to be used by non-programmers and should be the most intuitive thing ever to use.
