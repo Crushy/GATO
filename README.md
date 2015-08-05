@@ -13,4 +13,4 @@ GATO - Gamedev Auxiliary TOol
 Dev Notes
 ========
 
-This is meant to be used by non-programmers and should be the most intuitive thing ever to use.
+This is meant to be as intuitive as possible in order to be used by non-programmers.
