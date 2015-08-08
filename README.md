@@ -17,3 +17,5 @@ Dev Notes
 ========
 
 This is meant to be as intuitive as possible in order to be used by non-programmers.
+
+Inspired by [this blog post](http://blog.spaceduststudios.com/tools-and-processes-for-remote-game-development-part-2-collaboration).
