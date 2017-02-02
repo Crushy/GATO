@@ -2,30 +2,33 @@
 
 import sys, traceback,subprocess
 
+
+# TODO : Look into setuptools
+def handle_Missing_Module(formalName, pipModuleName):
+    print(formalName + " not found, trying to install")
+    return_code = subprocess.call("pip install -U " + pipModuleName, shell=True)
+
+    if return_code:
+        print("Sucessfully")
+    else:
+        print("Failed")
+
+
 try :
 	from PySide.QtCore import *
 	from PySide.QtGui import QSystemTrayIcon, QMenu, QAction, qApp, QApplication, QWidget, QIcon, QStyle, QMessageBox, \
 		QPushButton
 except ImportError :
-	handleMissingModule("PySide","PySide")
+    handle_Missing_Module("PySide","PySide")
 	
 
 try :
 	import yaml
 except ImportError :
-	handleMissingModule("yaml","pyyaml")
-	
-# TODO : Look into setuptools
-def Handle_Missing_Module(formalName,pipModuleName) :
-	print(formalName+" not found, trying to install")
-	return_code = subprocess.call("pip install -U "+pipModuleName, shell=True)
-	
-	if return_code :
-		print("Sucessfully")
-	else :
-		print("Failed")
-	
-	
+    handle_Missing_Module("yaml","pyyaml")
+
+
+
 class SystemTrayIcon(QSystemTrayIcon):
     """
     GATO - Gamedev Auxiliary TOol
@@ -49,18 +52,36 @@ class SystemTrayIcon(QSystemTrayIcon):
             task_action.triggered.connect(command)
             all_actions.append(task_action)
 
+        menu.addActions(all_actions)
+
+        #build help menu
+        helpMenu = QMenu()
+        helpMenu.setTitle("Help")
+        helpMenu.setIcon(QIcon("help-browser.xpm"))
+
+        # About GATO
         icon_about = QIcon("help-browser.xpm")
-        action_about = QAction(icon_about, "About", self)
+        action_about = QAction(icon_about, "About GATO", self)
         action_about.triggered.connect(self.about)
-        all_actions.append(action_about)
+        #all_actions.append(action_about)
+        helpMenu.addAction(action_about)
+
+        # About QT
+        icon_aboutQT = QIcon("help-browser.xpm")
+        action_aboutQT = QAction(icon_about, "About QT", self)
+        action_aboutQT.triggered.connect(self.aboutQT)
+        #all_actions.append(action_aboutQT)
+        helpMenu.addAction(action_aboutQT)
+
+        menu.addSeparator()
+        menu.addMenu(helpMenu)
 
         # Quit
         icon_quit = QIcon("process-stop.xpm")
         action_quit = QAction(icon_quit, "Quit", self)
         action_quit.triggered.connect(qApp.quit)
-        all_actions.append(action_quit)
 
-        menu.addActions(all_actions)
+        menu.addAction(action_quit)
 
         self.setContextMenu(menu)
 
@@ -73,34 +94,27 @@ class SystemTrayIcon(QSystemTrayIcon):
         except:
 
             msg_box = QMessageBox()
-
-            msg_box.setText("Could not execute command: " + command)
+            msg_box.setWindowTitle("Could not execute command")
+            msg_box.setText("Failed to execute:\n " + command)
 
             # msg_box.setWindowIcon())
             msg_box.setIcon(QMessageBox.Critical)
             msg_box.setDetailedText(traceback.format_exc())
 
-            button = QPushButton("Well, fuck me then")
+            button = QPushButton("Well, that sucks")
             button.clicked.connect(msg_box.close)
 
             msg_box.addButton(button, QMessageBox.AcceptRole)
             msg_box.exec_()
 
-
-
     def about(self):
-        msg_box = QMessageBox()
-        msg_box.setWindowTitle("About GATO")
-        msg_box.setIcon(QMessageBox.Information)
+        msg_box = QMessageBox.about(
+            None,
+            "About GATO",
+            "GATO is an automation tool made by <a href='http://crushy.github.io/'>Pedro Caetano</a>")
 
-        msg_box.setText("GATO was made by Pedro Caetano")
-
-        button = QPushButton("Indeed")
-        button.clicked.connect(msg_box.close)
-
-        msg_box.addButton(button, QMessageBox.AcceptRole)
-
-        msg_box.exec_()
+    def aboutQT(self):
+        msg_box = QMessageBox.aboutQt(None)
 
 
 # TODO mark this as a safe object
@@ -138,7 +152,7 @@ def main():
     app = QApplication("GATO")
 
     #app.setAttribute(Qt.AA_DontShowIconsInMenus, False)
-    logo_icon = QIcon("logo.xpm")
+    logo_icon = QIcon("trayIcon.xpm")
     
     w = QWidget()
     # Important because otherwise closing any window would kill the tray icon
