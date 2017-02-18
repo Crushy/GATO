@@ -24,7 +24,7 @@ Prerequisites
 =============
   * Pyside
   * Python 3.4.3
-  * You can open up the project file using PyCharm
+  * PyCharm if you want an easy build solution
 
 TODO
 ====
