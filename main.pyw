@@ -1,32 +1,26 @@
 # -*- coding: utf-8 -*-
 
-import sys, traceback,subprocess
-
+import sys
+import traceback
+import subprocess
+import inspect
 
 # TODO : Look into setuptools
-def handle_Missing_Module(formalName, pipModuleName):
+def handle_missing_module(formalName, pipModuleName):
     print(formalName + " not found, trying to install")
     return_code = subprocess.call("pip install -U " + pipModuleName, shell=True)
 
     if return_code:
-        print("Sucessfully")
+        print("Install Sucessful")
     else:
-        print("Failed")
+        print("Install Failed")
 
-
-try :
-	from PySide.QtCore import *
-	from PySide.QtGui import QSystemTrayIcon, QMenu, QAction, qApp, QApplication, QWidget, QIcon, QStyle, QMessageBox, \
-		QPushButton
-except ImportError :
-    handle_Missing_Module("PySide","PySide")
-	
-
-try :
-	import yaml
-except ImportError :
-    handle_Missing_Module("yaml","pyyaml")
-
+try:
+    from PySide.QtCore import *
+    from PySide.QtGui import QSystemTrayIcon, QMenu, QAction, qApp, QApplication, QWidget, QIcon, QStyle, QMessageBox, \
+        QPushButton
+except ImportError:
+    handle_missing_module("PySide", "PySide")
 
 
 class SystemTrayIcon(QSystemTrayIcon):
@@ -36,6 +30,8 @@ class SystemTrayIcon(QSystemTrayIcon):
     """
 
     def __init__(self, icon, task_list, parent=None):
+        #print(task_list)
+
         QSystemTrayIcon.__init__(self, icon, parent)
         menu = QMenu(parent)
         menu.setContextMenuPolicy(Qt.ActionsContextMenu)
@@ -43,11 +39,13 @@ class SystemTrayIcon(QSystemTrayIcon):
         all_actions = []
 
         for single_task in task_list:
-            task_action = QAction(single_task.name, self)
+            transformedFunctionName = single_task[0].split("_")
+            transformedFunctionName = ' '.join(str(x) for x in transformedFunctionName)
+            task_action = QAction(transformedFunctionName, self)
             
             # "Localizes" single_task.command so we're not just using a reference to the last one we added
             #see http://stackoverflow.com/questions/233673/lexical-closures-in-python
-            command = lambda z=single_task.command: self.execute_task(z)
+            command = lambda z = single_task[1]: self.execute_task(z)
 
             task_action.triggered.connect(command)
             all_actions.append(task_action)
@@ -87,15 +85,14 @@ class SystemTrayIcon(QSystemTrayIcon):
 
     def execute_task(self, command):
 
-        # TODO: handle some particularities about using the exec command and exceptions
         try:
-            print(command)
-            exec(command)
-        except:
+            #print("Executing:\n"+inspect.getsource(command)+"\n",flush=True)
+            command()
+        except :
 
             msg_box = QMessageBox()
             msg_box.setWindowTitle("Could not execute command")
-            msg_box.setText("Failed to execute:\n " + command)
+            msg_box.setText("Failed to execute:\n " + inspect.getsource(command))
 
             # msg_box.setWindowIcon())
             msg_box.setIcon(QMessageBox.Critical)
@@ -117,7 +114,6 @@ class SystemTrayIcon(QSystemTrayIcon):
         msg_box = QMessageBox.aboutQt(None)
 
 
-# TODO mark this as a safe object
 class Task:
     def __init__(self, name, command):
         self.name = name
@@ -130,35 +126,27 @@ class Task:
 def main():
     config_file = None
     try:
-        config_stream = open("config.yaml")
+        config_stream = open("config.py")
         print("Loaded config file")
     except FileNotFoundError as e:
         print("Couldn't load config file: {0}".format(e.strerror))
         sys.exit(-1)
 
-    config_file = yaml.load(config_stream)
 
-    tasks = config_file[0:]
-    for task in config_file:
-        # print("-  ")
-        print(task)
-        print("\n")
-    # print( yaml.dump(config_file) )
+    import config as configModule
+    all_functions = inspect.getmembers(configModule, inspect.isfunction)
 
-    # sys.exit(0)
-    import sys
-
-    sys.argv[0] = 'whatevernameyouwant'
+    #sys.argv[0] = 'whatevernameyouwant'
     app = QApplication("GATO")
 
     #app.setAttribute(Qt.AA_DontShowIconsInMenus, False)
-    logo_icon = QIcon("trayIcon.xpm")
-    
+    logo_icon = QIcon("gato-icon.xpm")
+
     w = QWidget()
     # Important because otherwise closing any window would kill the tray icon
     app.setQuitOnLastWindowClosed(False)
     app.setWindowIcon(logo_icon)
-    tray_icon = SystemTrayIcon(logo_icon, tasks, w)
+    tray_icon = SystemTrayIcon(logo_icon, all_functions, w)
 
     tray_icon.show()
 
